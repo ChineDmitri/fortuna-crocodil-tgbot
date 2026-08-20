@@ -1,0 +1,14 @@
+{
+  "telegramBotToken": "PASTE_BOTFATHER_TOKEN_HERE",
+  "publicBaseUrl": "https://your-ngrok-domain.ngrok-free.app",
+  "http": {
+    "port": 3000
+  },
+  "database": {
+    "path": "./data/croco.sqlite"
+  },
+  "defaultLanguage": "ru",
+  "imageUpdateIntervalMs": 2000,
+  "gameMaxDurationMinutes": 20,
+  "snapshotMaxBytes": 1500000
+}
