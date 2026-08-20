@@ -43,7 +43,7 @@ test('normalizes accents, punctuation, spaces, and Russian yo', () => {
   assert.equal(isWinningGuess('cafe', 'Café noir'), false);
 });
 
-test('i18n resolves supported languages and falls back to French keys', () => {
+test('i18n resolves supported languages and falls back to Russian by default', () => {
   assert.equal(t('en', 'langChanged'), 'Language changed to English.');
   assert.equal(t('ru', 'winner', { winner: 'Ivan', word: 'дом' }), 'Ivan угадал слово: дом. Игра окончена.');
   assert.equal(t('xx', 'langChanged'), 'Язык изменен на русский.');
