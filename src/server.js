@@ -58,8 +58,18 @@ export function createHttpServer({
   app.use(express.json({ limit: Math.ceil(config.snapshotMaxBytes * 2.2) }));
   app.use('/static', express.static(path.join(projectRoot, 'public'), {
     etag: true,
-    maxAge: '1h'
+    maxAge: 0,
+    setHeaders: (res) => {
+      res.setHeader('Cache-Control', 'no-cache');
+    }
   }));
+
+  app.use((req, res, next) => {
+    if (req.method === 'GET') {
+      res.setHeader('Cache-Control', 'no-store');
+    }
+    next();
+  });
 
   app.get('/', (_req, res) => {
     res.type('html').send(renderStatusPage());
@@ -133,6 +143,35 @@ export function createHttpServer({
     }
 
     return res.json({ ok: true });
+  });
+
+  app.post('/api/games/draw-state', async (req, res) => {
+    const token = String(req.body?.token ?? '');
+    let telegramUser;
+
+    try {
+      telegramUser = requestUser(req, config);
+      gameService.ensureUser(telegramUser);
+    } catch (error) {
+      return apiError(res, 401, 'INVALID_INIT_DATA', error.message);
+    }
+
+    const auth = gameService.authorizeSnapshot({ drawToken: token, telegramUser });
+    const lang = gameService.getUserLanguage(
+      telegramUser.id,
+      auth.game ? gameService.getChatLanguage(auth.game.chat_id) : config.defaultLanguage
+    );
+
+    if (!auth.ok) {
+      const [status, code, message] = errorForGameReason(auth.reason, lang);
+      return apiError(res, status, code, message);
+    }
+
+    return res.json({
+      ok: true,
+      word: auth.game.secret_word,
+      drawerName: auth.game.drawer_name
+    });
   });
 
   app.post('/api/games/snapshot', async (req, res) => {

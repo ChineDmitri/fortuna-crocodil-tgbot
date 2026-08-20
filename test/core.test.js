@@ -7,6 +7,7 @@ import { GameService } from '../src/gameService.js';
 import { normalizeWord, isWinningGuess } from '../src/normalizer.js';
 import { Store, GAME_STATUS } from '../src/store.js';
 import { validateTelegramWebAppInitData } from '../src/telegramAuth.js';
+import { renderDrawPage } from '../src/webPages.js';
 
 function config(overrides = {}) {
   return {
@@ -59,6 +60,18 @@ test('config validation rejects placeholders and accepts a complete local config
   assert.throws(() => validateConfig(config({ telegramBotToken: 'PASTE_BOTFATHER_TOKEN_HERE' })), /telegramBotToken/);
   assert.throws(() => validateConfig(config({ publicBaseUrl: 'http://localhost:3000' })), /HTTPS/);
   assert.throws(() => validateConfig(config({ defaultLanguage: 'de' })), /defaultLanguage/);
+});
+
+test('draw page uses cache-busted static assets and does not embed the secret word', () => {
+  const html = renderDrawPage({
+    lang: 'ru',
+    token: 'draw-token',
+    snapshotIntervalMs: 2000
+  });
+
+  assert.match(html, /\/static\/app\.css\?v=/);
+  assert.match(html, /\/static\/draw\.js\?v=/);
+  assert.doesNotMatch(html, /Caf[eé] noir/i);
 });
 
 test('validates Telegram Mini App initData', () => {
@@ -127,6 +140,19 @@ test('game service persists a full game flow in SQLite', () => {
   const assigned = service.assignDrawer({ gameId: started.game.id, telegramUser: drawer });
   assert.equal(assigned.ok, true);
   assert.equal(assigned.game.status, GAME_STATUS.DRAWING);
+
+  const authorizedDrawState = service.authorizeSnapshot({
+    drawToken: assigned.game.draw_token,
+    telegramUser: drawer
+  });
+  assert.equal(authorizedDrawState.ok, true);
+  assert.equal(authorizedDrawState.game.secret_word, 'Café noir');
+
+  const unauthorizedDrawState = service.authorizeSnapshot({
+    drawToken: assigned.game.draw_token,
+    telegramUser: creator
+  });
+  assert.equal(unauthorizedDrawState.reason, 'UNAUTHORIZED');
 
   const creatorGuess = service.checkGuess({ chatId: chat.id, telegramUser: creator, text: 'cafe noir' });
   assert.equal(creatorGuess.won, false);

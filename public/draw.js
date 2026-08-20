@@ -8,7 +8,13 @@ telegram?.expand();
 app.innerHTML = `
   <main class="draw-shell">
     <header class="draw-header">
-      <h1>${strings.drawTitle}</h1>
+      <div class="draw-heading">
+        <h1>${strings.drawTitle}</h1>
+        <div class="draw-secret" aria-live="polite">
+          <span>${strings.secretWord}</span>
+          <strong id="secret-word">${strings.loadingWord}</strong>
+        </div>
+      </div>
       <button id="clear" class="danger-button" type="button">${strings.clear}</button>
     </header>
     <section class="canvas-wrap">
@@ -39,6 +45,7 @@ const eraser = document.querySelector('#eraser');
 const size = document.querySelector('#size');
 const clear = document.querySelector('#clear');
 const status = document.querySelector('#status');
+const secretWord = document.querySelector('#secret-word');
 
 let drawing = false;
 let dirty = false;
@@ -139,6 +146,36 @@ async function sendSnapshot() {
   }
 }
 
+async function loadDrawState() {
+  if (!telegram?.initData) {
+    setStatus(strings.openFromTelegram, true);
+    secretWord.textContent = '';
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/games/draw-state', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token,
+        initData: telegram.initData
+      })
+    });
+
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok || !body.ok) {
+      throw new Error(body.message || strings.requestFailed);
+    }
+
+    secretWord.textContent = body.word;
+    setStatus(strings.waiting);
+  } catch (error) {
+    secretWord.textContent = '';
+    setStatus(error.message || strings.requestFailed, true);
+  }
+}
+
 canvas.addEventListener('pointerdown', (event) => {
   drawing = true;
   canvas.setPointerCapture(event.pointerId);
@@ -173,9 +210,9 @@ clear.addEventListener('click', async () => {
 
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
+loadDrawState();
 setInterval(sendSnapshot, Math.max(1000, Number(snapshotIntervalMs) || 2000));
 
 if (!telegram?.initData) {
   setStatus(strings.openFromTelegram, true);
 }
-

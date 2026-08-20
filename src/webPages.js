@@ -1,5 +1,11 @@
 import { resolveLanguage, t, webStrings } from './i18n.js';
 
+const ASSET_VERSION = '2026-08-20-draw-word-v2';
+
+function assetPath(pathname) {
+  return `${pathname}?v=${ASSET_VERSION}`;
+}
+
 function safeJson(value) {
   return JSON.stringify(value).replace(/</g, '\\u003c');
 }
@@ -11,13 +17,13 @@ function htmlPage({ title, data, script }) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${title}</title>
-    <link rel="stylesheet" href="/static/app.css">
+    <link rel="stylesheet" href="${assetPath('/static/app.css')}">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
     <div id="app"></div>
     <script>window.CROCO = ${safeJson(data)};</script>
-    <script type="module" src="${script}"></script>
+    <script type="module" src="${assetPath(script)}"></script>
   </body>
 </html>`;
 }
@@ -58,7 +64,7 @@ export function renderStatusPage() {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Croco Bot</title>
-    <link rel="stylesheet" href="/static/app.css">
+    <link rel="stylesheet" href="${assetPath('/static/app.css')}">
   </head>
   <body>
     <main class="panel">
@@ -68,4 +74,3 @@ export function renderStatusPage() {
   </body>
 </html>`;
 }
-

@@ -140,9 +140,40 @@ label {
   border-bottom: 1px solid var(--line);
 }
 
+.draw-heading {
+  min-width: 0;
+}
+
 .draw-header h1 {
   margin: 0;
   font-size: 1rem;
+}
+
+.draw-secret {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  max-width: min(680px, calc(100vw - 120px));
+  width: fit-content;
+  margin-top: 5px;
+  padding: 5px 8px;
+  font-size: 0.95rem;
+  line-height: 1.25;
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 14%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--primary) 36%, var(--line));
+  border-radius: 8px;
+}
+
+.draw-secret span {
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.draw-secret strong {
+  min-width: 0;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
 }
 
 .draw-footer {
@@ -215,6 +246,10 @@ label {
     grid-template-columns: 1fr 1fr;
   }
 
+  .draw-secret {
+    max-width: calc(100vw - 108px);
+  }
+
   .field-row {
     justify-content: space-between;
   }
@@ -223,4 +258,3 @@ label {
     grid-column: 1 / -1;
   }
 }
-

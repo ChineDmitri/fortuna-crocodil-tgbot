@@ -97,7 +97,7 @@ When a user is seen for the first time, the bot uses Telegram `language_code` if
 2. The bot sends that player a private Mini App to enter the secret word.
 3. When the word is saved, the bot asks in the group who wants to draw.
 4. The first player who taps the draw button becomes the drawer.
-5. The bot sends the drawer a private canvas.
+5. The bot sends the drawer a private canvas. The secret word is displayed at the top of that canvas for the drawer only.
 6. The canvas sends snapshots to the server; the bot posts and then edits the drawing image in the group.
 7. The first matching group message wins. If the bot cannot read normal group messages, use `/guess word`.
 
@@ -110,4 +110,3 @@ npm test
 ```
 
 Tests cover word normalization, i18n, user language preferences, config validation, Telegram `initData` verification, and game transitions with SQLite.
-
